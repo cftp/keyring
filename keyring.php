@@ -113,6 +113,9 @@ class Keyring {
 	static function request_handlers() {
 		global $current_user;
 
+		Keyring_Util::debug( 'Keyring_Service::request_handlers()' );
+		Keyring_Util::debug( $_REQUEST );
+
 		if ( defined( 'KEYRING__FORCE_USER' ) && KEYRING__FORCE_USER && in_array( $_REQUEST['action'], array( 'request', 'verify' ) ) ) {
 			global $current_user;
 			$real_user = $current_user->ID;
@@ -133,6 +136,7 @@ class Keyring {
 
 			// Core nonce check required for everything. "keyring-ACTION" is the kr_nonce format
 			if ( !isset( $_REQUEST['kr_nonce'] ) || !wp_verify_nonce( $_REQUEST['kr_nonce'], 'keyring-' . $_REQUEST['action'] ) ) {
+				Keyring_Util::debug( 'Keyring: no nonce' );
 				Keyring::error( __( 'Invalid/missing Keyring core nonce. All core actions require a valid nonce.', 'keyring' ) );
 				exit;
 			}
@@ -143,6 +147,9 @@ class Keyring {
 
 			if ( 'delete' == $_REQUEST['action'] )
 				do_action( "keyring_connection_deleted", $_REQUEST['service'], $_REQUEST );
+		} else {
+			Keyring_Util::debug( 'Keyring available services: ' . print_r( array_keys( Keyring::get_registered_services() ), true ) );
+			Keyring_Util::debug( 'Keyring available actions: ' . print_r( apply_filters( 'keyring_core_actions', array( 'request', 'verify', 'created', 'delete', 'manage' ) ), true ) );
 		}
 
 		if ( defined( 'KEYRING__FORCE_USER' ) && KEYRING__FORCE_USER && in_array( $_REQUEST['action'], array( 'request', 'verify' ) ) )
